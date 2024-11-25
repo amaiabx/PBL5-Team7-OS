@@ -31,4 +31,21 @@ public class Machine extends Thread {
             }
         }
     }
+
+    public void beTurnedOn() throws InterruptedException {
+        System.out.println(this.getName() + " has been turned on");
+    }
+    
+    public void startScan() throws InterruptedException {
+        System.out.println("\t" + this.getName() + " is scanning an item");
+        Thread.sleep(rand.nextInt(30) + 3000);
+    }
+
+    public void finishScan() throws InterruptedException {
+        System.out.println("\t" + this.getName() + " has finished scanning the item");
+    }
+
+    public void beTurnedOff() throws InterruptedException {
+        System.out.println(this.getName() + " has been turned off");
+    }
 }

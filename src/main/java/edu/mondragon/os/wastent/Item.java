@@ -8,10 +8,10 @@ public class Item extends Thread {
     private Category category;
     private Random rand;
 
-    public Item(int id) {
+    public Item(int id, Container container) {
         super("Item " + id);
         this.rand = new Random();
-        this.container = null;
+        this.container = container;
         this.category = null;
     }
 
@@ -40,5 +40,21 @@ public class Item extends Thread {
                 this.interrupt();
             }
         }
-    }  
+    }
+
+    public void ready() throws InterruptedException {
+        System.out.println("\t\t" + this.getName() + " is ready to be scanned");
+    }
+
+    public void beScanned() throws InterruptedException {
+        System.out.println("\t\t" + this.getName() + " is being be scanned");
+    }
+
+    public void beSorted() throws InterruptedException {
+        System.out.println("\t\t" + this.getName() + " has been identified as: " + this.getCategory());
+    }
+
+    public void leave() throws InterruptedException {
+        System.out.println("\t\t" + this.getName() + " has left the scanning station");
+    }
 }
