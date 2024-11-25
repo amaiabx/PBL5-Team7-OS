@@ -5,9 +5,11 @@ import java.util.Random;
 public class Monitor extends Thread {
         
     private Random rand;
+    private WastePlant wastePlant;
 
-    public Monitor(int id) {
+    public Monitor(WastePlant wastePlant, int id) {
         super("Monitor " + id);
+        this.wastePlant = wastePlant;
         this.rand = new Random();
     }
 
@@ -24,7 +26,7 @@ public class Monitor extends Thread {
 
     public void turnMachineOn() throws InterruptedException {
         System.out.println(this.getName() + " is turning a machine on");
-        Thread.sleep(rand.nextInt(30));
+        Thread.sleep(rand.nextInt(30) + 3000);
     }
 
     public void turnMachineOff() throws InterruptedException {

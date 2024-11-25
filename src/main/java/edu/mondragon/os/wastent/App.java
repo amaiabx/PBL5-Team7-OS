@@ -4,10 +4,13 @@ import java.util.Random;
 
 public class App {
 
-    final static int NMONITORS = 3;
+    final static int NMONITORS = 1;
     final static int NMACHINES = 3;
     final static int NCONTAINERS = 5;
     final static int NITEM = 50;
+    final static int MAXITEMS = 5;
+    
+    private WastePlant wastePlant;
 
     private Monitor monitor[];
     private Machine machine[];
@@ -16,30 +19,34 @@ public class App {
 
     private Random rand;
 
+
     public App() {
+        wastePlant = new WastePlant(MAXITEMS);
+
         monitor = new Monitor[NMONITORS];
         machine = new Machine[NMACHINES];
         container = new Container[NCONTAINERS];
         item = new Item[NITEM];
 
         this.rand = new Random();
+
     }
 
     public void createThreads() {
         Container itemContainer;
 
         for (int i = 0; i < NMONITORS; i++) {
-            monitor[i] = new Monitor(i);
+            monitor[i] = new Monitor(wastePlant, i);
         }
         for (int i = 0; i < NMACHINES; i++) {
-            machine[i] = new Machine(i);
+            machine[i] = new Machine(wastePlant, i);
         }
         for (int i = 0; i < NCONTAINERS; i++) {
-            container[i] = new Container(i);
+            container[i] = new Container(wastePlant, i);
         }
         for (int i = 0; i < NITEM; i++) {
             itemContainer = container[rand.nextInt(NCONTAINERS)];
-            item[i] = new Item(i, itemContainer);
+            item[i] = new Item(wastePlant, i, itemContainer);
             item[i].getContainer().addItem(item[i]);
         }
     }

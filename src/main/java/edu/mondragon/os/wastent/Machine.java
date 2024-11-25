@@ -1,16 +1,32 @@
 package edu.mondragon.os.wastent;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Machine extends Thread {
     
     private Random rand;
+    private List<Item> itemList;
+    private int number;
     private Monitor monitor;
+    private WastePlant wastePlant;
 
-    public Machine(int id) {
+    public Machine(WastePlant wastePlant, int id) {
         super("Machine " + id);
         this.rand = new Random();
+        this.itemList = new ArrayList<>();
+        this.number = 0;
+        this.wastePlant = wastePlant;
         this.monitor = null;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public void setNumber(int number) {
+        this.number = number;
     }
 
     public Monitor getMonitor() {
@@ -21,11 +37,19 @@ public class Machine extends Thread {
         this.monitor = monitor;
     }
 
+    public List<Item> getItemList() {
+        return itemList;
+    }
+
+    public void addItem(Item item) {
+        itemList.add(item);
+    }
+
     @Override
     public void run() {
         while (!this.isInterrupted()) {
             try {
-                Thread.sleep(rand.nextInt(10));
+                Thread.sleep(rand.nextInt(30));
             } catch (InterruptedException e) {
                 this.interrupt();
             }

@@ -9,11 +9,13 @@ public class Container extends Thread {
     private Machine machine;
     private List<Item> itemList;
     private Random rand;
+    private WastePlant wastePlant;
 
-    public Container(int id) {
+    public Container(WastePlant wastePlant, int id) {
         super("Container " + id);
         this.machine = null;
         this.itemList = new ArrayList<>();
+        this.wastePlant = wastePlant;
         this.rand = new Random();
     }
 
@@ -37,7 +39,7 @@ public class Container extends Thread {
     public void run() {
         while (!this.isInterrupted()) {
             try {
-                Thread.sleep(rand.nextInt(10));
+                Thread.sleep(rand.nextInt(30));
             } catch (InterruptedException e) {
                 this.interrupt();
             }
