@@ -1,13 +1,18 @@
 package edu.mondragon.os.wastent;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 public class App {
 
     final static int NMONITORS = 1;
     final static int NMACHINES = 3;
     final static int NCONTAINERS = 5;
-    final static int NITEM = 50;
+    final static int NITEMS = 50;
     final static int MAXITEMS = 5;
     
     private WastePlant wastePlant;
@@ -17,18 +22,25 @@ public class App {
     private Container container[];
     private Item item[];
 
+    private List<Machine> machines;
+
+
     private Random rand;
+    private Set<Item> startedItems;
 
 
     public App() {
-        wastePlant = new WastePlant(MAXITEMS);
+        machines = new ArrayList<>();
+
+        wastePlant = new WastePlant(machines, MAXITEMS);
 
         monitor = new Monitor[NMONITORS];
         machine = new Machine[NMACHINES];
         container = new Container[NCONTAINERS];
-        item = new Item[NITEM];
+        item = new Item[NITEMS];
 
         this.rand = new Random();
+        startedItems = Collections.synchronizedSet(new HashSet<>());
 
     }
 
@@ -40,11 +52,12 @@ public class App {
         }
         for (int i = 0; i < NMACHINES; i++) {
             machine[i] = new Machine(wastePlant, i);
+            machines.add(machine[i]);
         }
         for (int i = 0; i < NCONTAINERS; i++) {
             container[i] = new Container(wastePlant, i);
         }
-        for (int i = 0; i < NITEM; i++) {
+        for (int i = 0; i < NITEMS; i++) {
             itemContainer = container[rand.nextInt(NCONTAINERS)];
             item[i] = new Item(wastePlant, i, itemContainer);
             item[i].getContainer().addItem(item[i]);
@@ -61,9 +74,9 @@ public class App {
         for (int i = 0; i < NCONTAINERS; i++) {
             container[i].start();
         }
-        for (int i = 0; i < NITEM; i++) {
-            item[i].start();
-        }
+        // for (int i = 0; i < NITEMS; i++) {
+        //     item[i].start();
+        // }
     }
 
     public void interruptThreads() {
@@ -76,8 +89,14 @@ public class App {
         for (int i = 0; i < NCONTAINERS; i++) {
             container[i].interrupt();
         }
-        for (int i = 0; i < NITEM; i++) {
-            item[i].interrupt();
+        // for (int i = 0; i < NITEMS; i++) {
+        //     item[i].interrupt();
+        // }
+
+        synchronized (startedItems) {
+            for (Item item : startedItems) {
+                item.interrupt(); // Interrupt only started items
+            }
         }
     }
 
@@ -92,8 +111,14 @@ public class App {
             for (int i = 0; i < NCONTAINERS; i++) {
                 container[i].join();
             }
-            for (int i = 0; i < NITEM; i++) {
-                item[i].join();
+            // for (int i = 0; i < NITEMS; i++) {
+            //     item[i].join();
+            // }
+
+            synchronized (startedItems) {
+                for (Item item : startedItems) {
+                    item.join(); // Join only started items
+                }
             }
         } catch (InterruptedException e) {
             e.printStackTrace();

@@ -8,7 +8,7 @@ public class Monitor extends Thread {
     private WastePlant wastePlant;
 
     public Monitor(WastePlant wastePlant, int id) {
-        super("Monitor " + id);
+        super("👷 Monitor " + id);
         this.wastePlant = wastePlant;
         this.rand = new Random();
     }
@@ -17,7 +17,12 @@ public class Monitor extends Thread {
     public void run() {
         while (!this.isInterrupted()) {
             try {
-                Thread.sleep(rand.nextInt(30));
+                System.out.println(this.getName() + " is turning a machine on");
+                Thread.sleep(rand.nextInt(30) + 3000);
+                wastePlant.turnMachineOn();
+                Thread.sleep(rand.nextInt(100) + 5000);
+                wastePlant.turnMachineOff();
+                System.out.println(this.getName() + " is turning a machine off");
             } catch (InterruptedException e) {
                 this.interrupt();
             }

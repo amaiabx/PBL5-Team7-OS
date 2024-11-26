@@ -11,14 +11,24 @@ public class Machine extends Thread {
     private int number;
     private Monitor monitor;
     private WastePlant wastePlant;
+    private boolean on;
 
     public Machine(WastePlant wastePlant, int id) {
-        super("Machine " + id);
+        super("🤖 Machine " + id);
         this.rand = new Random();
         this.itemList = new ArrayList<>();
         this.number = 0;
         this.wastePlant = wastePlant;
         this.monitor = null;
+        this.on = false;
+    } 
+
+    public boolean isOn() {
+        return on;
+    }
+
+    public void setOn(boolean on) {
+        this.on = on;
     }
 
     public int getNumber() {
@@ -41,25 +51,34 @@ public class Machine extends Thread {
         return itemList;
     }
 
+    public void setItemList(List<Item> itemList) {
+        this.itemList = itemList;
+    }
+
     public void addItem(Item item) {
         itemList.add(item);
+    }
+
+    public void removeItem(Item item) {
+        itemList.remove(item);
     }
 
     @Override
     public void run() {
         while (!this.isInterrupted()) {
             try {
-                Thread.sleep(rand.nextInt(30));
+                wastePlant.beTurnedOn(this);
+                wastePlant.scanItem();
+                System.out.println("\t" + this.getName() + " is scanning an item");
+                Thread.sleep(rand.nextInt(30) + 3000);
+                System.out.println("\t" + this.getName() + " has finished scanning the item");
+                wastePlant.beTurnedOff(this);
             } catch (InterruptedException e) {
                 this.interrupt();
             }
         }
     }
 
-    public void beTurnedOn() throws InterruptedException {
-        System.out.println(this.getName() + " has been turned on");
-    }
-    
     public void startScan() throws InterruptedException {
         System.out.println("\t" + this.getName() + " is scanning an item");
         Thread.sleep(rand.nextInt(30) + 3000);
@@ -67,9 +86,5 @@ public class Machine extends Thread {
 
     public void finishScan() throws InterruptedException {
         System.out.println("\t" + this.getName() + " has finished scanning the item");
-    }
-
-    public void beTurnedOff() throws InterruptedException {
-        System.out.println(this.getName() + " has been turned off");
     }
 }

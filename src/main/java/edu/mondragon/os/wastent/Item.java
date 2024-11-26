@@ -10,7 +10,7 @@ public class Item extends Thread {
     private WastePlant wastePlant;
 
     public Item(WastePlant wastePlant, int id, Container container) {
-        super("Item " + id);
+        super("♻️  Item " + id);
         this.rand = new Random();
         this.container = container;
         this.wastePlant = wastePlant;
@@ -37,6 +37,27 @@ public class Item extends Thread {
     public void run() {
         while (!this.isInterrupted()) {
             try {
+                System.out.println("\t" + this.getName() + " is ready to be scanned");
+                wastePlant.readyToScan();
+                System.out.println("\t\t" + this.getName() + " is being scanned");
+
+                switch (rand.nextInt(4)) {
+                    case 0:
+                        this.setCategory(category.CARDBOARD);
+                        break;
+                    case 1:
+                        this.setCategory(category.GLASS);
+                        break;
+                    case 2:
+                        this.setCategory(category.ORGANIC);
+                        break;
+                    case 3:
+                        this.setCategory(category.PLASTIC);
+                        break;
+                }
+
+                System.out.println("\t\t" + this.getName() + " has been identified as: " + this.getCategory());
+                System.out.println("\t\t\t" + this.getName() + " has left the scanning station");
                 Thread.sleep(rand.nextInt(30));
             } catch (InterruptedException e) {
                 this.interrupt();
