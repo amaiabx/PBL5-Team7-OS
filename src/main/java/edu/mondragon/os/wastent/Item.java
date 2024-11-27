@@ -35,49 +35,33 @@ public class Item extends Thread {
 
     @Override
     public void run() {
-        while (!this.isInterrupted()) {
-            try {
-                System.out.println("\t" + this.getName() + " is ready to be scanned");
-                wastePlant.readyToScan();
-                System.out.println("\t\t" + this.getName() + " is being scanned");
+        try {
+            Thread.sleep(rand.nextInt(500) * 5);
+            System.out.println("\t" + this.getName() + " is ready to be scanned");
+            wastePlant.readyToScan();
+            System.out.println("\t\t" + this.getName() + " is being scanned");
 
-                switch (rand.nextInt(4)) {
-                    case 0:
-                        this.setCategory(category.CARDBOARD);
-                        break;
-                    case 1:
-                        this.setCategory(category.GLASS);
-                        break;
-                    case 2:
-                        this.setCategory(category.ORGANIC);
-                        break;
-                    case 3:
-                        this.setCategory(category.PLASTIC);
-                        break;
-                }
-
-                System.out.println("\t\t" + this.getName() + " has been identified as: " + this.getCategory());
-                System.out.println("\t\t\t" + this.getName() + " has left the scanning station");
-                Thread.sleep(rand.nextInt(30));
-            } catch (InterruptedException e) {
-                this.interrupt();
+            switch (rand.nextInt(4)) {
+                case 0:
+                    this.setCategory(Category.CARDBOARD);
+                    break;
+                case 1:
+                    this.setCategory(Category.GLASS);
+                    break;
+                case 2:
+                    this.setCategory(Category.ORGANIC);
+                    break;
+                default:
+                    this.setCategory(Category.PLASTIC);
+                    break;
             }
+
+            wastePlant.finishScan();
+            System.out.println("\t\t" + this.getName() + " has been identified as: " + this.getCategory());
+            System.out.println("\t\t\t" + this.getName() + " has left the scanning station");
+        } catch (InterruptedException e) {
+            this.interrupt();
         }
-    }
-
-    public void ready() throws InterruptedException {
-        System.out.println("\t\t" + this.getName() + " is ready to be scanned");
-    }
-
-    public void beScanned() throws InterruptedException {
-        System.out.println("\t\t" + this.getName() + " is being be scanned");
-    }
-
-    public void beSorted() throws InterruptedException {
-        System.out.println("\t\t" + this.getName() + " has been identified as: " + this.getCategory());
-    }
-
-    public void leave() throws InterruptedException {
-        System.out.println("\t\t" + this.getName() + " has left the scanning station");
+        
     }
 }

@@ -9,18 +9,18 @@ import java.util.Set;
 
 public class App {
 
-    final static int NMONITORS = 1;
-    final static int NMACHINES = 3;
-    final static int NCONTAINERS = 5;
-    final static int NITEMS = 50;
-    final static int MAXITEMS = 5;
+    static final int NMONITORS = 3;
+    static final int NMACHINES = 3;
+    static final int NCONTAINERS = 5;
+    static final int NITEMS = 40;
+    static final int MAXITEMS = 5;
     
     private WastePlant wastePlant;
 
-    private Monitor monitor[];
-    private Machine machine[];
-    private Container container[];
-    private Item item[];
+    private Monitor[] monitor;
+    private Machine[] machine;
+    private Container[] container;
+    private Item[] item;
 
     private List<Machine> machines;
 
@@ -58,7 +58,7 @@ public class App {
             container[i] = new Container(wastePlant, i);
         }
         for (int i = 0; i < NITEMS; i++) {
-            itemContainer = container[rand.nextInt(NCONTAINERS)];
+            itemContainer = container[rand.nextInt(NCONTAINERS)]; // Assign the item to a random container
             item[i] = new Item(wastePlant, i, itemContainer);
             item[i].getContainer().addItem(item[i]);
         }
@@ -74,9 +74,6 @@ public class App {
         for (int i = 0; i < NCONTAINERS; i++) {
             container[i].start();
         }
-        // for (int i = 0; i < NITEMS; i++) {
-        //     item[i].start();
-        // }
     }
 
     public void interruptThreads() {
@@ -89,13 +86,9 @@ public class App {
         for (int i = 0; i < NCONTAINERS; i++) {
             container[i].interrupt();
         }
-        // for (int i = 0; i < NITEMS; i++) {
-        //     item[i].interrupt();
-        // }
-
         synchronized (startedItems) {
-            for (Item item : startedItems) {
-                item.interrupt(); // Interrupt only started items
+            for (Item i : startedItems) {
+                i.interrupt(); // Interrupt only started items
             }
         }
     }
@@ -111,13 +104,9 @@ public class App {
             for (int i = 0; i < NCONTAINERS; i++) {
                 container[i].join();
             }
-            // for (int i = 0; i < NITEMS; i++) {
-            //     item[i].join();
-            // }
-
             synchronized (startedItems) {
-                for (Item item : startedItems) {
-                    item.join(); // Join only started items
+                for (Item i : startedItems) {
+                    i.join(); // Join only started items
                 }
             }
         } catch (InterruptedException e) {
@@ -133,7 +122,7 @@ public class App {
         app.startThreads();
 
         try {
-            Thread.sleep(20000);
+            Thread.sleep(15000);
         } catch (InterruptedException e1) {
             e1.printStackTrace();
         }

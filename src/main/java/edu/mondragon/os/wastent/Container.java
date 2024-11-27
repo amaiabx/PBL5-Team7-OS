@@ -42,25 +42,8 @@ public class Container extends Thread {
             System.out.println(this.getName() + " has arrived");
             wastePlant.arriveContainer(this);
             System.out.println(this.getName() + " has been assigned to " + this.getMachine().getName());
-            Thread.sleep(rand.nextInt(30));
-            System.out.println(this.getName() + " is being dumped");
         } catch (InterruptedException e) {
             this.interrupt();
         }
-    }
-
-    public void arrive() throws InterruptedException {
-        System.out.println(this.getName() + " has arrived");
-        Thread.sleep(rand.nextInt(30));
-    }
-
-    public void beAssigned(Machine assigned) throws InterruptedException {
-        this.machine = assigned;
-        System.out.println(this.getName() + " has been assigned to " + this.getMachine().getName());
-    }
-
-    public void beDumped() throws InterruptedException {
-        System.out.println(this.getName() + " is being dumped");
-        Thread.sleep(rand.nextInt(30));
     }
 }

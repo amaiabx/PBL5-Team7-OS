@@ -15,26 +15,17 @@ public class Monitor extends Thread {
 
     @Override
     public void run() {
-        while (!this.isInterrupted()) {
-            try {
-                System.out.println(this.getName() + " is turning a machine on");
-                Thread.sleep(rand.nextInt(30) + 3000);
-                wastePlant.turnMachineOn();
-                Thread.sleep(rand.nextInt(100) + 5000);
-                wastePlant.turnMachineOff();
-                System.out.println(this.getName() + " is turning a machine off");
-            } catch (InterruptedException e) {
-                this.interrupt();
-            }
+        try {
+            Thread.sleep(rand.nextInt(1000));
+            System.out.println(this.getName() + " is turning a machine on");
+            Thread.sleep(rand.nextInt(1000) + 2000);
+            wastePlant.turnMachineOn();
+            Thread.sleep(rand.nextInt(5000) * 3);
+            // wastePlant.waitToTurnMachineOff();
+            // System.out.println(this.getName() + " is turning a machine off");
+        } catch (InterruptedException e) {
+            this.interrupt();
         }
-    }
-
-    public void turnMachineOn() throws InterruptedException {
-        System.out.println(this.getName() + " is turning a machine on");
-        Thread.sleep(rand.nextInt(30) + 3000);
-    }
-
-    public void turnMachineOff() throws InterruptedException {
-        System.out.println(this.getName() + " is turning a machine off");
+        
     }
 }
