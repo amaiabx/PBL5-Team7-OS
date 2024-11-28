@@ -7,7 +7,8 @@ import java.util.stream.Collectors;
 public class WastePlant {
 
     List<Machine> machines;
-    private Item current;
+    private Item currentItem, cur;
+    private Machine currentMachine;
 
     private Semaphore mutex;
     private Semaphore isOn;
@@ -18,12 +19,15 @@ public class WastePlant {
     private Semaphore scanDone;
     private Semaphore canFinish;
     private Semaphore readyToTurnOff;
+    private Semaphore waitToTurnOff;
     private Semaphore canLeave;
 
 
     public WastePlant(List<Machine> machines, int capacity) {
         this.machines = machines;
-        this.current = null;
+        this.currentItem = null;
+        this.cur = null;
+        this.currentMachine = null;
 
         mutex = new Semaphore(1);
         isOn = new Semaphore(0);
@@ -34,6 +38,7 @@ public class WastePlant {
         scanDone = new Semaphore(0);
         canFinish = new Semaphore(0);
         readyToTurnOff = new Semaphore(0);
+        waitToTurnOff = new Semaphore(0);
         canLeave = new Semaphore(0);
     }
 
@@ -48,7 +53,7 @@ public class WastePlant {
 
         mutex.acquire();
         for (Machine machine : machines) {
-            if (machine.isOn()) {
+            if (machine.isOn() && !machine.isNoMore()) {
                 // Assign the machine that is the least busy
                 int size = machine.getItemList().size();
                 if (size < smallest) {
@@ -64,7 +69,6 @@ public class WastePlant {
 
     public void arriveContainer(Container container) throws InterruptedException {
         Machine found;
-
         
         found = findAvailableMachine();
         container.setMachine(found);
@@ -91,9 +95,12 @@ public class WastePlant {
     }
 
     public void readyToScan() throws InterruptedException {
+        mutex.acquire();
+        cur = (Item) Thread.currentThread();
         scanReady.release();
+        mutex.release();
         inScan.acquire();
-        current = (Item) Thread.currentThread();
+        currentItem = (Item) Thread.currentThread();
     }
 
     public void beTurnedOn(Machine machine) throws InterruptedException {
@@ -103,7 +110,6 @@ public class WastePlant {
     }
 
     public void beTurnedOff(Machine machine) throws InterruptedException {
-        isOff.acquire();
         machineAvailable.acquire();
         machine.setOn(false);
     }
@@ -113,27 +119,55 @@ public class WastePlant {
     }
 
     public void waitToTurnMachineOff() throws InterruptedException {
+        waitToTurnOff.release();
+
+        for (Machine m : machines) {
+            if (m.getItemList().isEmpty()) {
+                waitToTurnOff.acquire();
+                currentMachine.setNoMore(true);
+                readyToTurnOff.release();
+            }
+        }
+
         readyToTurnOff.acquire();
+        beTurnedOff(currentMachine);
     }
 
-    public Item scanItem() throws InterruptedException {
-        scanReady.acquire();
-        inScan.release();
-        scanDone.release();
-        canFinish.acquire();
-
-        return current;
+    public Item scanItem(Machine machine) throws InterruptedException {
+        mutex.acquire();
+        // If the item belongs to the machine, scan it
+        if (machine.getItemList().contains(cur)) {
+            mutex.release();
+            scanReady.acquire();
+            inScan.release();
+            scanDone.release();
+            canFinish.acquire();
+            return currentItem;
+        }
+        mutex.release();
+        return null;
     }
 
     public void itemScanned(Machine machine) throws InterruptedException {
         mutex.acquire();
-        machine.removeItem(current);
+        machine.removeItem(currentItem);
         mutex.release();
         canLeave.release();
 
+
+        mutex.acquire();
+        System.out.println(machine.getName() + ": " + machine.getItemList().size());
+
+        // If the machine isn't scanning anything, it can be turned off
         if (machine.getItemList().isEmpty()) {
+            currentMachine = machine;
+            if (waitToTurnOff.availablePermits() > 0) {
+                waitToTurnOff.acquire();
+                machine.setNoMore(true);
+            }
             readyToTurnOff.release();
         }
+        mutex.release();
     }
 
     public void finishScan() throws InterruptedException {

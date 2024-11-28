@@ -16,13 +16,13 @@ public class Monitor extends Thread {
     @Override
     public void run() {
         try {
-            Thread.sleep(rand.nextInt(1000));
+            Thread.sleep(rand.nextInt(500));
             System.out.println(this.getName() + " is turning a machine on");
-            Thread.sleep(rand.nextInt(1000) + 2000);
+            Thread.sleep(rand.nextInt(1000, 2000));
             wastePlant.turnMachineOn();
-            Thread.sleep(rand.nextInt(5000) * 3);
-            // wastePlant.waitToTurnMachineOff();
-            // System.out.println(this.getName() + " is turning a machine off");
+            Thread.sleep(rand.nextInt(5000, 10000));
+            System.out.println(this.getName() + " is waiting to turn a machine off");
+            wastePlant.waitToTurnMachineOff();
         } catch (InterruptedException e) {
             this.interrupt();
         }

@@ -9,10 +9,10 @@ import java.util.Set;
 
 public class App {
 
-    static final int NMONITORS = 3;
-    static final int NMACHINES = 3;
-    static final int NCONTAINERS = 5;
-    static final int NITEMS = 40;
+    static final int NMONITORS = 1;
+    static final int NMACHINES = 1;
+    static final int NCONTAINERS = 1;
+    static final int NITEMS = 10;
     static final int MAXITEMS = 5;
     
     private WastePlant wastePlant;
@@ -122,7 +122,7 @@ public class App {
         app.startThreads();
 
         try {
-            Thread.sleep(15000);
+            Thread.sleep(20000);
         } catch (InterruptedException e1) {
             e1.printStackTrace();
         }

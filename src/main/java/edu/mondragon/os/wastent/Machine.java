@@ -11,6 +11,7 @@ public class Machine extends Thread {
     private Monitor monitor;
     private WastePlant wastePlant;
     private boolean on;
+    private boolean noMore;
 
     public Machine(WastePlant wastePlant, int id) {
         super("🤖 Machine " + id);
@@ -19,7 +20,15 @@ public class Machine extends Thread {
         this.wastePlant = wastePlant;
         this.monitor = null;
         this.on = false;
-    } 
+    }
+
+    public boolean isNoMore() {
+        return noMore;
+    }
+
+    public void setNoMore(boolean noMore) {
+        this.noMore = noMore;
+    }
 
     public boolean isOn() {
         return on;
@@ -63,11 +72,15 @@ public class Machine extends Thread {
                     wastePlant.beTurnedOn(this);
                     System.out.println(this.getName() + " was turned on");
                 }
-                item = wastePlant.scanItem();
-                System.out.println("\t\t" + this.getName() + " is scanning " + item.getName());
-                wastePlant.itemScanned(this);
-                // wastePlant.beTurnedOff(this);
-                // System.out.println(this.getName() + " was turned off");
+                item = wastePlant.scanItem(this);
+                if (item != null) {
+                    System.out.println("\t\t" + this.getName() + " is scanning " + item.getName());
+                    Thread.sleep(rand.nextInt(1000));
+                    wastePlant.itemScanned(this);
+                }
+                if (!this.on) {
+                    System.out.println(this.getName() + " was turned off");
+                }
             } catch (InterruptedException e) {
                 this.interrupt();
             }

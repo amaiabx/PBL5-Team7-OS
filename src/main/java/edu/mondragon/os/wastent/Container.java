@@ -38,7 +38,7 @@ public class Container extends Thread {
     @Override
     public void run() {
         try {
-            Thread.sleep(rand.nextInt(1000, 10000));
+            Thread.sleep(rand.nextInt(8000));
             System.out.println(this.getName() + " has arrived");
             wastePlant.arriveContainer(this);
             System.out.println(this.getName() + " has been assigned to " + this.getMachine().getName());
