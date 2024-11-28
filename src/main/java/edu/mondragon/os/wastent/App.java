@@ -9,9 +9,9 @@ import java.util.Set;
 
 public class App {
 
-    static final int NMONITORS = 1;
-    static final int NMACHINES = 1;
-    static final int NCONTAINERS = 1;
+    static final int NMONITORS = 2;
+    static final int NMACHINES = 2;
+    static final int NCONTAINERS = 2;
     static final int NITEMS = 10;
     static final int MAXITEMS = 5;
     
@@ -59,7 +59,7 @@ public class App {
         }
         for (int i = 0; i < NITEMS; i++) {
             itemContainer = container[rand.nextInt(NCONTAINERS)]; // Assign the item to a random container
-            item[i] = new Item(wastePlant, i, itemContainer);
+            item[i] = new Item(wastePlant, i+1, itemContainer);
             item[i].getContainer().addItem(item[i]);
         }
     }

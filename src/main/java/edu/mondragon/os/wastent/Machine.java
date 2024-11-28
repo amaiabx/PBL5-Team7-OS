@@ -11,6 +11,7 @@ public class Machine extends Thread {
     private Monitor monitor;
     private WastePlant wastePlant;
     private boolean on;
+    private boolean canBeOff;
     private boolean noMore;
 
     public Machine(WastePlant wastePlant, int id) {
@@ -20,6 +21,16 @@ public class Machine extends Thread {
         this.wastePlant = wastePlant;
         this.monitor = null;
         this.on = false;
+        this.noMore = false;
+        this.canBeOff = true;
+    }
+
+    public boolean isCanBeOff() {
+        return canBeOff;
+    }
+
+    public void setCanBeOff(boolean canBeOff) {
+        this.canBeOff = canBeOff;
     }
 
     public boolean isNoMore() {
@@ -78,21 +89,9 @@ public class Machine extends Thread {
                     Thread.sleep(rand.nextInt(1000));
                     wastePlant.itemScanned(this);
                 }
-                if (!this.on) {
-                    System.out.println(this.getName() + " was turned off");
-                }
             } catch (InterruptedException e) {
                 this.interrupt();
             }
         }
-    }
-
-    public void startScan() throws InterruptedException {
-        System.out.println("\t" + this.getName() + " is scanning an item");
-        Thread.sleep(rand.nextInt(30) + 3000);
-    }
-
-    public void finishScan() throws InterruptedException {
-        System.out.println("\t" + this.getName() + " has finished scanning the item");
     }
 }
