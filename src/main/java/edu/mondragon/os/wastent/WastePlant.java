@@ -12,7 +12,7 @@ public class WastePlant {
 
     private Semaphore mutex;
     private Semaphore isOn;
-    private Semaphore isOff;
+    private Semaphore advance;
     private Semaphore machineAvailable;
     private Semaphore scanReady;
     private Semaphore inScan;
@@ -31,7 +31,7 @@ public class WastePlant {
 
         mutex = new Semaphore(1);
         isOn = new Semaphore(0);
-        isOff = new Semaphore(0);
+        advance = new Semaphore(1);
         machineAvailable = new Semaphore(0);
         scanReady = new Semaphore(0, true); // FIFO
         inScan = new Semaphore(0);
@@ -64,12 +64,17 @@ public class WastePlant {
         }
         mutex.release();
 
+        if (found == null) {
+            turnMachineOn();
+            beTurnedOn(machines.get(0));
+            found = machines.get(0);
+        }
+
         return found;
     }
 
     public void arriveContainer(Container container) throws InterruptedException {
         Machine found;
-        
         
         found = findAvailableMachine();
         found.setCanBeOff(false);
@@ -80,10 +85,8 @@ public class WastePlant {
             waitToTurnOff.acquire();
         }
 
-
         container.setMachine(found);
         
-
         List<Item> items = container.getItemList();
 
         System.out.println(container.getName() + " has arrived containing items [" +
@@ -104,10 +107,8 @@ public class WastePlant {
     }
 
     public void readyToScan() throws InterruptedException {
-        mutex.acquire();
-        cur = (Item) Thread.currentThread();
         scanReady.release();
-        mutex.release();
+        cur = (Item) Thread.currentThread();
         inScan.acquire();
         currentItem = (Item) Thread.currentThread();
     }
@@ -129,9 +130,11 @@ public class WastePlant {
     }
 
     public Item scanItem(Machine machine) throws InterruptedException {
+        Item current;
+        current = cur;
         mutex.acquire();
         // If the item belongs to the machine, scan it
-        if (machine.getItemList().contains(cur)) {
+        if (machine.getItemList().contains(current)) {
             mutex.release();
             scanReady.acquire();
             inScan.release();
@@ -144,7 +147,19 @@ public class WastePlant {
     }
 
     public void itemScanned(Machine machine) throws InterruptedException {
-        machine.removeItem(currentItem);
+        mutex.acquire();
+
+        // Remove scanned items from list
+        for (Machine m : machines) {
+            for (int i = 0; i < m.getItemList().size(); i++) {
+                Item item = m.getItemList().get(i);
+                if (item.getCategory() != null) {
+                    m.removeItem(item);
+                }
+            }
+        }
+
+        mutex.release();
         canLeave.release();
 
         System.out.println("\t\t" + machine.getName() + " items left to scan [" +
@@ -161,7 +176,6 @@ public class WastePlant {
 
     public void waitToTurnMachineOff() throws InterruptedException {
         waitToTurnOff.acquire();
-
         mutex.acquire();
 
         for (Machine machine : machines) {

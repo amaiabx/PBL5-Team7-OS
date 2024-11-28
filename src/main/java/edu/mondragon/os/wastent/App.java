@@ -76,30 +76,13 @@ public class App {
         }
     }
 
-    public void interruptThreads() {
-        for (int i = 0; i < NMONITORS; i++) {
-            monitor[i].interrupt();
-        }
-        for (int i = 0; i < NMACHINES; i++) {
-            machine[i].interrupt();
-        }
-        for (int i = 0; i < NCONTAINERS; i++) {
-            container[i].interrupt();
-        }
-        synchronized (startedItems) {
-            for (Item i : startedItems) {
-                i.interrupt(); // Interrupt only started items
-            }
-        }
-    }
-
     public void waitEndOfThreads() {
         try {
             for (int i = 0; i < NMONITORS; i++) {
                 monitor[i].join();
             }
             for (int i = 0; i < NMACHINES; i++) {
-                machine[i].join();
+                machine[i].interrupt();
             }
             for (int i = 0; i < NCONTAINERS; i++) {
                 container[i].join();
@@ -121,13 +104,6 @@ public class App {
         app.createThreads();
         app.startThreads();
 
-        try {
-            Thread.sleep(20000);
-        } catch (InterruptedException e1) {
-            e1.printStackTrace();
-        }
-
-        app.interruptThreads();
         app.waitEndOfThreads();
     }
 }

@@ -85,7 +85,6 @@ public class Machine extends Thread {
                 }
                 item = wastePlant.scanItem(this);
                 if (item != null) {
-                    System.out.println("\t\t" + this.getName() + " is scanning " + item.getName());
                     Thread.sleep(rand.nextInt(1000));
                     wastePlant.itemScanned(this);
                 }
