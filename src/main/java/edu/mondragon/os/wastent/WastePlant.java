@@ -7,23 +7,22 @@ import java.util.stream.Collectors;
 public class WastePlant {
 
     List<Machine> machines;
-    private Item currentItem, cur;
+    private Item currentItem;
+    private Item cur;
     private Machine currentMachine;
 
     private Semaphore mutex;
     private Semaphore isOn;
-    private Semaphore advance;
     private Semaphore machineAvailable;
     private Semaphore scanReady;
     private Semaphore inScan;
     private Semaphore scanDone;
     private Semaphore canFinish;
-    private Semaphore readyToTurnOff;
     private Semaphore waitToTurnOff;
     private Semaphore canLeave;
 
 
-    public WastePlant(List<Machine> machines, int capacity) {
+    public WastePlant(List<Machine> machines, int nMachines) {
         this.machines = machines;
         this.currentItem = null;
         this.cur = null;
@@ -31,14 +30,12 @@ public class WastePlant {
 
         mutex = new Semaphore(1);
         isOn = new Semaphore(0);
-        advance = new Semaphore(1);
         machineAvailable = new Semaphore(0);
         scanReady = new Semaphore(0, true); // FIFO
         inScan = new Semaphore(0);
         scanDone = new Semaphore(0);
         canFinish = new Semaphore(0);
-        readyToTurnOff = new Semaphore(0);
-        waitToTurnOff = new Semaphore(2);
+        waitToTurnOff = new Semaphore(nMachines);
         canLeave = new Semaphore(0);
     }
 

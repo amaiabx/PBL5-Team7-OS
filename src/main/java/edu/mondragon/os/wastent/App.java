@@ -32,7 +32,7 @@ public class App {
     public App() {
         machines = new ArrayList<>();
 
-        wastePlant = new WastePlant(machines, MAXITEMS);
+        wastePlant = new WastePlant(machines, NMACHINES);
 
         monitor = new Monitor[NMONITORS];
         machine = new Machine[NMACHINES];
