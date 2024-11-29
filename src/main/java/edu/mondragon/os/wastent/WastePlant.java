@@ -148,10 +148,12 @@ public class WastePlant {
 
         // Remove scanned items from list
         for (Machine m : machines) {
-            for (int i = 0; i < m.getItemList().size(); i++) {
-                Item item = m.getItemList().get(i);
-                if (item.getCategory() != null) {
-                    m.removeItem(item);
+            if (m.isOn()) {
+                for (int i = 0; i < m.getItemList().size(); i++) {
+                    Item item = m.getItemList().get(i);
+                    if (item.getCategory() != null) {
+                        m.removeItem(item);
+                    }
                 }
             }
         }
@@ -159,16 +161,26 @@ public class WastePlant {
         mutex.release();
         canLeave.release();
 
-        System.out.println("\t\t" + machine.getName() + " items left to scan [" +
-        machine.getItemList().stream()
-            .map(item -> item.getName().split("Item ")[1]) // Print only the number
-            .collect(Collectors.joining(", "))
-        + "]");
-        
-        if (machine.getItemList().isEmpty()) {
-            machine.setCanBeOff(true);
-            waitToTurnOff.release();
+        mutex.acquire();
+
+        for (Machine m : machines) {
+            if (m.isOn()) {
+                System.out.println("\t\t" + m.getName() + " items left to scan [" +
+                m.getItemList().stream()
+                    .map(item -> item.getName().split("Item ")[1]) // Print only the number
+                    .collect(Collectors.joining(", "))
+                + "]");
+            }
+
+            if (m.getItemList().isEmpty() && !m.isCanBeOff()) {
+                m.setCanBeOff(true);
+                waitToTurnOff.release();
+            }
         }
+
+        mutex.release();
+        
+        
     }
 
     public void waitToTurnMachineOff() throws InterruptedException {

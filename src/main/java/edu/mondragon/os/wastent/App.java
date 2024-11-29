@@ -9,10 +9,10 @@ import java.util.Set;
 
 public class App {
 
-    static final int NMONITORS = 2;
-    static final int NMACHINES = 2;
-    static final int NCONTAINERS = 2;
-    static final int NITEMS = 10;
+    static final int NMONITORS = 5;
+    static final int NMACHINES = 5;
+    static final int NCONTAINERS = 5;
+    static final int NITEMS = 30;
     static final int MAXITEMS = 5;
     
     private WastePlant wastePlant;
