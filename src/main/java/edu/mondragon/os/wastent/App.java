@@ -11,8 +11,8 @@ public class App {
 
     static final int NMONITORS = 5;
     static final int NMACHINES = 5;
-    static final int NCONTAINERS = 5;
-    static final int NITEMS = 30;
+    static final int NCONTAINERS = 10;
+    static final int NITEMS = 50;
     static final int MAXITEMS = 5;
     
     private WastePlant wastePlant;

@@ -20,7 +20,7 @@ public class WastePlant {
     private Semaphore canFinish;
     private Semaphore waitToTurnOff;
     private Semaphore canLeave;
-
+    private Semaphore left;
 
     public WastePlant(List<Machine> machines, int nMachines) {
         this.machines = machines;
@@ -37,6 +37,7 @@ public class WastePlant {
         canFinish = new Semaphore(0);
         waitToTurnOff = new Semaphore(nMachines);
         canLeave = new Semaphore(0);
+        left = new Semaphore(0);
     }
 
     private Machine findAvailableMachine() throws InterruptedException {
@@ -159,7 +160,9 @@ public class WastePlant {
         }
 
         mutex.release();
+
         canLeave.release();
+        left.acquire();
 
         mutex.acquire();
 
@@ -203,5 +206,6 @@ public class WastePlant {
         scanDone.acquire();
         canFinish.release();
         canLeave.acquire();
+        left.release();
     }
 }
