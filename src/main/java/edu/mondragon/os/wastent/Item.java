@@ -21,10 +21,6 @@ public class Item extends Thread {
         return container;
     }
 
-    public void setContainer(Container container) {
-        this.container = container;
-    }
-
     public Category getCategory() {
         return category;
     }

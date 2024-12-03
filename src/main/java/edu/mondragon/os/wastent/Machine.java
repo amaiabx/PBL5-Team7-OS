@@ -61,10 +61,6 @@ public class Machine extends Thread {
         return itemList;
     }
 
-    public void setItemList(List<Item> itemList) {
-        this.itemList = itemList;
-    }
-
     public void addItem(Item item) {
         itemList.add(item);
     }
