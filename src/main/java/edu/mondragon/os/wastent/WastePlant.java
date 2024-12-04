@@ -31,7 +31,10 @@ public class WastePlant {
         mutex = new Semaphore(1);
         isOn = new Semaphore(0);
         machineAvailable = new Semaphore(0);
-        scanReady = new Semaphore(0, true); // FIFO
+
+        // FIFO, the item that is ready to be scanned first is scanned first
+        scanReady = new Semaphore(0, true);
+
         inScan = new Semaphore(0);
         scanDone = new Semaphore(0);
         canFinish = new Semaphore(0);
@@ -45,7 +48,6 @@ public class WastePlant {
         int smallest = Integer.MAX_VALUE;
 
         // Wait until a machine has been turned on
-
         machineAvailable.acquire();
         machineAvailable.release();
 
@@ -62,23 +64,19 @@ public class WastePlant {
         }
         mutex.release();
 
-        if (found == null) {
-            turnMachineOn();
-            beTurnedOn(machines.get(0));
-            found = machines.get(0);
-        }
-
         return found;
     }
 
     public void arriveContainer(Container container) throws InterruptedException {
         Machine found;
         
+        // Find a machine to dump the container in
         found = findAvailableMachine();
         found.setCanBeOff(false);
         
         mutex.acquire();
         
+        // If it was empty, as it gets items it can't be turned off anymore
         if (found.getItemList().isEmpty()) {
             waitToTurnOff.acquire();
         }
@@ -93,6 +91,7 @@ public class WastePlant {
             .collect(Collectors.joining(", "))
         + "]");
         
+        // Add the items to the machine
         for (Item item : items) {
             found.addItem(item);
         }
@@ -105,25 +104,30 @@ public class WastePlant {
     }
 
     public void readyToScan() throws InterruptedException {
+        // An item is ready to be scanned
         scanReady.release();
         cur = (Item) Thread.currentThread();
+        // An item enters the scan
         inScan.acquire();
         currentItem = (Item) Thread.currentThread();
     }
 
     public void beTurnedOn(Machine machine) throws InterruptedException {
+        // A machine is turned on
         isOn.acquire();
         machineAvailable.release();
         machine.setOn(true);
     }
 
     public void beTurnedOff(Machine machine) throws InterruptedException {
+        // A machine is turned off
         machineAvailable.acquire();
         machine.setOn(false);
         System.out.println(machine.getName() + " was turned off");
     }
 
     public void turnMachineOn() {
+        // A monitor turns a machine on
         isOn.release();
     }
 
@@ -175,6 +179,7 @@ public class WastePlant {
                 + "]");
             }
 
+            // If that was the last item, the machine can now be turned off
             if (m.getItemList().isEmpty() && !m.isCanBeOff()) {
                 m.setCanBeOff(true);
                 waitToTurnOff.release();
@@ -187,22 +192,25 @@ public class WastePlant {
     }
 
     public void waitToTurnMachineOff() throws InterruptedException {
+        // Wait until there is a machine that can be turned off
         waitToTurnOff.acquire();
         mutex.acquire();
 
         for (Machine machine : machines) {
-            // If the machine isn't scanning anything, it can be turned off
+            // The machine cannot receive any more containers while it is being turned off
             if (machine.isCanBeOff() && machine.isOn()) {
                 machine.setNoMore(true);
                 currentMachine = machine;
             }
         }
+        // Turn off the machine
         if (currentMachine != null) beTurnedOff(currentMachine);
         
         mutex.release();
     }
 
     public void finishScan() throws InterruptedException {
+        // The item finishes scanning and leaves the station
         scanDone.acquire();
         canFinish.release();
         canLeave.acquire();
