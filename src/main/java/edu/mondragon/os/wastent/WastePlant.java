@@ -204,7 +204,7 @@ public class WastePlant {
             }
         }
         // Turn off the machine
-        if (currentMachine != null) beTurnedOff(currentMachine);
+        beTurnedOff(currentMachine);
         
         mutex.release();
     }

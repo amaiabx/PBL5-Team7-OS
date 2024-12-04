@@ -87,12 +87,11 @@ public class App {
             for (int i = 0; i < NCONTAINERS; i++) {
                 container[i].join();
             }
-            synchronized (startedItems) {
-                for (Item i : startedItems) {
-                    i.join(); // Join only started items
-                }
+            for (int i = 0; i < NITEMS; i++) {
+                item[i].join();
             }
         } catch (InterruptedException e) {
+            System.out.println("Threads interruped");
             e.printStackTrace();
         }
     }

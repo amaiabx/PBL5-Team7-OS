@@ -1,0 +1,5 @@
+edu\mondragon\os\wastent\AppTest.class
+edu\mondragon\os\wastent\ContainerTest.class
+edu\mondragon\os\wastent\ItemTest.class
+edu\mondragon\os\wastent\MachineTest.class
+edu\mondragon\os\wastent\MonitorTest.class
