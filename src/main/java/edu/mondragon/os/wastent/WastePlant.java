@@ -43,7 +43,7 @@ public class WastePlant {
         left = new Semaphore(0);
     }
 
-    private Machine findAvailableMachine() throws InterruptedException {
+    public Machine findAvailableMachine() throws InterruptedException {
         Machine found = null;
         int smallest = Integer.MAX_VALUE;
 

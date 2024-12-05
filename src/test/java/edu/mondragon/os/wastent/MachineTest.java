@@ -12,7 +12,7 @@ public class MachineTest {
 
     WastePlant wastePlant;
     Machine machine;
-
+    
     @Before
     public void setup() {
         wastePlant = new WastePlant(null, 0);
@@ -59,4 +59,6 @@ public class MachineTest {
         itemList.remove(1);
         assertEquals(itemList, machine.getItemList());
     }        
+
+
 }
