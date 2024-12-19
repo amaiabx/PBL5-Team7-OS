@@ -1,17 +1,17 @@
 package edu.mondragon.os.wastent;
 
-import java.util.Random;
+import java.security.SecureRandom;
 
 public class Item extends Thread {
           
     private Container container;
     private Category category;
-    private Random rand;
+    private SecureRandom rand;
     private WastePlant wastePlant;
 
     public Item(WastePlant wastePlant, int id, Container container) {
         super("♻️  Item " + id);
-        this.rand = new Random();
+        this.rand = new SecureRandom();
         this.container = container;
         this.wastePlant = wastePlant;
         this.category = null;

@@ -1,12 +1,12 @@
 package edu.mondragon.os.wastent;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class Machine extends Thread {
     
-    private Random rand;
+    private SecureRandom rand;
     private List<Item> itemList;
     private Monitor monitor;
     private WastePlant wastePlant;
@@ -16,7 +16,7 @@ public class Machine extends Thread {
 
     public Machine(WastePlant wastePlant, int id) {
         super("🤖 Machine " + id);
-        this.rand = new Random();
+        this.rand = new SecureRandom();
         this.itemList = new ArrayList<>();
         this.wastePlant = wastePlant;
         this.monitor = null;
@@ -82,7 +82,7 @@ public class Machine extends Thread {
                 item = wastePlant.scanItem(this);
                 if (item != null) {
                     Thread.sleep(rand.nextInt(1000));
-                    wastePlant.itemScanned(this);
+                    wastePlant.itemScanned();
                 }
             } catch (InterruptedException e) {
                 this.interrupt();

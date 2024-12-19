@@ -1,16 +1,16 @@
 package edu.mondragon.os.wastent;
 
-import java.util.Random;
+import java.security.SecureRandom;
 
 public class Monitor extends Thread {
         
-    private Random rand;
+    private SecureRandom rand;
     private WastePlant wastePlant;
 
     public Monitor(WastePlant wastePlant, int id) {
         super("👷 Monitor " + id);
         this.wastePlant = wastePlant;
-        this.rand = new Random();
+        this.rand = new SecureRandom();
     }
 
     @Override

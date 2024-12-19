@@ -148,17 +148,20 @@ public class WastePlant {
         return null;
     }
 
-    public void itemScanned(Machine machine) throws InterruptedException {
+    public void removeItem(Item item, Machine m) {
+        if (item.getCategory() != null) {
+            m.removeItem(item);
+        }
+    }
+
+    public void itemScanned() throws InterruptedException {
         mutex.acquire();
 
         // Remove scanned items from list
         for (Machine m : machines) {
             if (m.isOn()) {
                 for (int i = 0; i < m.getItemList().size(); i++) {
-                    Item item = m.getItemList().get(i);
-                    if (item.getCategory() != null) {
-                        m.removeItem(item);
-                    }
+                    removeItem(m.getItemList().get(i), m);
                 }
             }
         }

@@ -1,11 +1,8 @@
 package edu.mondragon.os.wastent;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
 public class App {
 
@@ -23,11 +20,7 @@ public class App {
     private Item[] item;
 
     private List<Machine> machines;
-
-
-    private Random rand;
-    private Set<Item> startedItems;
-
+    private SecureRandom rand;
 
     public App() {
         machines = new ArrayList<>();
@@ -39,9 +32,7 @@ public class App {
         container = new Container[NCONTAINERS];
         item = new Item[NITEMS];
 
-        this.rand = new Random();
-        startedItems = Collections.synchronizedSet(new HashSet<>());
-
+        this.rand = new SecureRandom();
     }
 
     public void createThreads() {
@@ -76,23 +67,18 @@ public class App {
         }
     }
 
-    public void waitEndOfThreads() {
-        try {
-            for (int i = 0; i < NMONITORS; i++) {
-                monitor[i].join();
-            }
-            for (int i = 0; i < NMACHINES; i++) {
-                machine[i].interrupt();
-            }
-            for (int i = 0; i < NCONTAINERS; i++) {
-                container[i].join();
-            }
-            for (int i = 0; i < NITEMS; i++) {
-                item[i].join();
-            }
-        } catch (InterruptedException e) {
-            System.out.println("Threads interruped");
-            e.printStackTrace();
+    public void waitEndOfThreads() throws InterruptedException {
+        for (int i = 0; i < NMONITORS; i++) {
+            monitor[i].join();
+        }
+        for (int i = 0; i < NMACHINES; i++) {
+            machine[i].interrupt();
+        }
+        for (int i = 0; i < NCONTAINERS; i++) {
+            container[i].join();
+        }
+        for (int i = 0; i < NITEMS; i++) {
+            item[i].join();
         }
     }
 
@@ -103,6 +89,10 @@ public class App {
         app.createThreads();
         app.startThreads();
 
-        app.waitEndOfThreads();
+        try {
+            app.waitEndOfThreads();
+        } catch (InterruptedException e) {
+            System.out.println("Thread was interrupted.");
+        }
     }
 }

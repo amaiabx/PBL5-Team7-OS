@@ -1,14 +1,14 @@
 package edu.mondragon.os.wastent;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class Container extends Thread {
 
     private Machine machine;
     private List<Item> itemList;
-    private Random rand;
+    private SecureRandom rand;
     private WastePlant wastePlant;
 
     public Container(WastePlant wastePlant, int id) {
@@ -16,7 +16,8 @@ public class Container extends Thread {
         this.machine = null;
         this.itemList = new ArrayList<>();
         this.wastePlant = wastePlant;
-        this.rand = new Random();
+        this.rand = new SecureRandom();
+
     }
 
     public Machine getMachine() {
