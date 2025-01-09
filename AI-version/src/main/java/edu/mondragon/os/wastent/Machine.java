@@ -25,6 +25,7 @@ public class Machine extends Thread {
         this.canBeOff = true;
     }
 
+    @Override
     public long getId() {
         return id;
     }

@@ -8,8 +8,8 @@ public class App {
 
     static final int NMONITORS = 4;
     static final int NMACHINES = 4;
-    static final int NCONTAINERS = 10;
-    static final int NITEMS = 60;
+    static final int NCONTAINERS = 5;
+    static final int NITEMS = 30;
     
     private WastePlant wastePlant;
 
