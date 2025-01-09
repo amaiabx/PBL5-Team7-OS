@@ -24,13 +24,7 @@ public class MachineTest {
         machine.setCanBeOff(true);
         assertEquals(true, machine.isCanBeOff());
     }
-
-    @Test
-    public void testNoMoreGetSet() {
-        machine.setNoMore(true);
-        assertEquals(true, machine.isNoMore());
-    }
-
+    
     @Test
     public void testOnGetSet() {
         machine.setOn(true);
