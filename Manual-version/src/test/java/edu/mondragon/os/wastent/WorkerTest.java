@@ -26,12 +26,6 @@ public class WorkerTest {
     }
 
     @Test
-    public void testNoMoreGetSet() {
-        worker.setNoMore(true);
-        assertEquals(true, worker.isNoMore());
-    }
-
-    @Test
     public void testOnGetSet() {
         worker.setOn(true);
         assertEquals(true, worker.isOn());

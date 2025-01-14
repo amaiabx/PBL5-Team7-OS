@@ -36,7 +36,7 @@ public class Item extends Thread {
             System.out.println("\t" + this.getName() + " is ready to be scanned");
             wastePlant.readyToScan(this);
             System.out.println("\t\t" + this.getName() + " is being scanned");
-
+            
             switch (rand.nextInt(4)) {
                 case 0:
                     this.setCategory(Category.CARDBOARD);

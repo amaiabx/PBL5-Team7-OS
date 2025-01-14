@@ -10,7 +10,6 @@ public class App {
     static final int NWORKERS = 4;
     static final int NCONTAINERS = 7;
     static final int NITEMS = 30;
-    static final int MAXITEMS = 5;
     
     private WastePlant wastePlant;
 

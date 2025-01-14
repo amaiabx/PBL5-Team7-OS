@@ -6,23 +6,28 @@ import java.util.List;
 
 public class Worker extends Thread {
     
+    private int id;
     private SecureRandom rand;
     private List<Item> itemList;
     private Monitor monitor;
     private WastePlant wastePlant;
     private boolean on;
     private boolean canBeOff;
-    private boolean noMore;
 
     public Worker(WastePlant wastePlant, int id) {
         super("🛠️  Worker " + id);
+        this.id = id;
         this.rand = new SecureRandom();
         this.itemList = new ArrayList<>();
         this.wastePlant = wastePlant;
         this.monitor = null;
         this.on = false;
-        this.noMore = false;
         this.canBeOff = true;
+    }
+
+    @Override
+    public long getId() {
+        return id;
     }
 
     public boolean isCanBeOff() {
@@ -31,14 +36,6 @@ public class Worker extends Thread {
 
     public void setCanBeOff(boolean canBeOff) {
         this.canBeOff = canBeOff;
-    }
-
-    public boolean isNoMore() {
-        return noMore;
-    }
-
-    public void setNoMore(boolean noMore) {
-        this.noMore = noMore;
     }
 
     public boolean isOn() {
@@ -71,19 +68,15 @@ public class Worker extends Thread {
 
     @Override
     public void run() {
-        Item item;
-
         while (!this.isInterrupted()) {
             try {
                 if (!this.on) {
                     wastePlant.beTurnedOn(this);
                     System.out.println(this.getName() + "'s line was turned on");
                 }
-                item = wastePlant.scanItem(this);
-                if (item != null) {
-                    Thread.sleep(rand.nextInt(1000, 1500));
-                    wastePlant.itemScanned();
-                }
+                wastePlant.scanItem(this);
+                Thread.sleep(rand.nextInt(2000, 2500));
+                wastePlant.itemScanned(this);
             } catch (InterruptedException e) {
                 this.interrupt();
             }

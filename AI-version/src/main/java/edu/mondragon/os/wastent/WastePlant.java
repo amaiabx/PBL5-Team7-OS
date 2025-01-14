@@ -7,22 +7,20 @@ import java.util.stream.Collectors;
 public class WastePlant {
 
     List<Machine> machines;
-    private Machine currentMachine;
 
     private Semaphore mutex;
+
     private Semaphore isOn;
     private Semaphore machineAvailable;
     private Semaphore waitToTurnOff;
+    
     private Semaphore[] scanReady;
     private Semaphore[] inScan;
     private Semaphore[] scanDone;
-    private Semaphore[] canFinish;
-    private Semaphore[] canLeave;
-    private Semaphore[] left;
+    private Semaphore[] hasLeft;
 
     public WastePlant(List<Machine> machines, int nMachines) {
         this.machines = machines;
-        this.currentMachine = null;
 
         mutex = new Semaphore(1);
 
@@ -40,14 +38,8 @@ public class WastePlant {
         scanDone = new Semaphore[nMachines];
         createThreads(scanDone, false, nMachines);
         
-        canFinish = new Semaphore[nMachines];
-        createThreads(canFinish, false, nMachines);
-        
-        canLeave = new Semaphore[nMachines];
-        createThreads(canLeave, false, nMachines);
-        
-        left = new Semaphore[nMachines];
-        createThreads(left, false, nMachines);
+        hasLeft = new Semaphore[nMachines];
+        createThreads(hasLeft, false, nMachines);
     }
 
     public void createThreads(Semaphore[] name, boolean fair, int nMachines) {
@@ -161,7 +153,6 @@ public class WastePlant {
 
         // The scan finishes
         scanDone[(int) machine.getId()].release();
-        canFinish[(int) machine.getId()].acquire();
     }
 
     public void removeItem(Item item, Machine m) {
@@ -180,8 +171,7 @@ public class WastePlant {
         mutex.release();
 
         // The scanned item leaves the scanning station
-        canLeave[(int) m.getId()].release();
-        left[(int) m.getId()].acquire();
+        hasLeft[(int) m.getId()].acquire();
 
         // Print the item's assigned machine's remaining scan queue
         mutex.acquire();
@@ -201,6 +191,8 @@ public class WastePlant {
     }
 
     public void waitToTurnMachineOff() throws InterruptedException {
+        Machine currentMachine = null;
+
         // Wait until there is a machine that can be turned off
         waitToTurnOff.acquire();
         
@@ -232,8 +224,6 @@ public class WastePlant {
         // The item finishes scanning and leaves the station
         mutex.release();
         scanDone[id].acquire();
-        canFinish[id].release();
-        canLeave[id].acquire();
-        left[id].release();
+        hasLeft[id].release();
     }
 }
