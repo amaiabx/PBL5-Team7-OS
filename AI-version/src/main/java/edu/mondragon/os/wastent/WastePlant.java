@@ -1,50 +1,47 @@
 package edu.mondragon.os.wastent;
 
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 public class WastePlant {
 
     List<Machine> machines;
+    int nMachines;
 
     private Semaphore mutex;
 
     private Semaphore isOn;
     private Semaphore machineAvailable;
     private Semaphore waitToTurnOff;
-    
-    private Semaphore[] scanReady;
-    private Semaphore[] inScan;
-    private Semaphore[] scanDone;
-    private Semaphore[] hasLeft;
+
+    private BlockingQueue<Item>[] scanReady;
+    private BlockingQueue<Item>[] inScan;
+    private BlockingQueue<Item>[] scanDone;
+    private BlockingQueue<Item>[] hasLeft;
 
     public WastePlant(List<Machine> machines, int nMachines) {
         this.machines = machines;
+        this.nMachines = nMachines;
 
         mutex = new Semaphore(1);
 
         isOn = new Semaphore(0);
         machineAvailable = new Semaphore(0);
         waitToTurnOff = new Semaphore(nMachines);
-        
-        // FIFO, the item that is ready to be scanned first is scanned first
-        scanReady = new Semaphore[nMachines];
-        createThreads(scanReady, true, nMachines);
-        
-        inScan = new Semaphore[nMachines];
-        createThreads(inScan, false, nMachines);
-        
-        scanDone = new Semaphore[nMachines];
-        createThreads(scanDone, false, nMachines);
-        
-        hasLeft = new Semaphore[nMachines];
-        createThreads(hasLeft, false, nMachines);
-    }
 
-    public void createThreads(Semaphore[] name, boolean fair, int nMachines) {
+        scanReady = new BlockingQueue[nMachines];
+        inScan = new BlockingQueue[nMachines];
+        scanDone = new BlockingQueue[nMachines];
+        hasLeft = new BlockingQueue[nMachines];
+
         for (int i=0; i < nMachines; i++) {
-            name[i] = new Semaphore(0, fair);
+            scanReady[i] = new LinkedBlockingQueue<>();
+            inScan[i] = new LinkedBlockingQueue<>(1);
+            scanDone[i] = new LinkedBlockingQueue<>();
+            hasLeft[i] = new LinkedBlockingQueue<>();
         }
     }
 
@@ -119,12 +116,13 @@ public class WastePlant {
                 break;
             }
         }
-        // The item is ready to be scanned
-        scanReady[id].release();
         mutex.release();
+        
+        // The item is ready to be scanned
+        scanReady[id].put(item);
 
         // The item enters the scan
-        inScan[id].acquire();
+        inScan[id].take();
     }
 
     public void beTurnedOn(Machine machine) throws InterruptedException {
@@ -148,11 +146,11 @@ public class WastePlant {
 
     public void scanItem(Machine machine) throws InterruptedException {
         // An item enters the scan
-        scanReady[(int) machine.getId()].acquire();
-        inScan[(int) machine.getId()].release();
+        Item item = (Item) scanReady[(int) machine.getId()].take();
+        inScan[(int) machine.getId()].put(item);
 
         // The scan finishes
-        scanDone[(int) machine.getId()].release();
+        scanDone[(int) machine.getId()].put(item);
     }
 
     public void removeItem(Item item, Machine m) {
@@ -171,15 +169,17 @@ public class WastePlant {
         mutex.release();
 
         // The scanned item leaves the scanning station
-        hasLeft[(int) m.getId()].acquire();
+        // System.out.println(hasLeft[(int) m.getId()]);
+        hasLeft[(int) m.getId()].take();
 
         // Print the item's assigned machine's remaining scan queue
         mutex.acquire();
+
         System.out.println("\t\t" + m.getName() + " items left to scan [" +
-            m.getItemList().stream()
-                .map(item -> item.getName().split("Item ")[1]) // Print only the number
-                .collect(Collectors.joining(", "))
-            + "]");
+        m.getItemList().stream()
+            .map(item -> item.getName().split("Item ")[1]) // Print only the number
+            .collect(Collectors.joining(", "))
+        + "]");
 
         // If after the scan the machine's queue is empty, it can be turned off by a monitor
         if (m.getItemList().isEmpty() && !m.isCanBeOff()) {
@@ -187,8 +187,8 @@ public class WastePlant {
             waitToTurnOff.release();
         }
         mutex.release();
-        
     }
+    
 
     public void waitToTurnMachineOff() throws InterruptedException {
         Machine currentMachine = null;
@@ -223,7 +223,8 @@ public class WastePlant {
 
         // The item finishes scanning and leaves the station
         mutex.release();
-        scanDone[id].acquire();
-        hasLeft[id].release();
-    }
+
+        scanDone[id].take();
+        hasLeft[id].put(item);
+    }    
 }
