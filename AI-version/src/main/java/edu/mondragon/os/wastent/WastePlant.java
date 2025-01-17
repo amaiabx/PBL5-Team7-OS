@@ -162,7 +162,7 @@ public class WastePlant {
 
     public void scanItem(Machine machine) throws InterruptedException {
         // An item enters the scan
-        Item item = (Item) scanReady.get((int) machine.getId()).take();
+        Item item = scanReady.get((int) machine.getId()).take();
         inScan.get((int) machine.getId()).put(item);
 
         // The scan finishes

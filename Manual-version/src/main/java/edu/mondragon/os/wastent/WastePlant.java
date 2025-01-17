@@ -162,7 +162,7 @@ public class WastePlant {
 
     public void sortItem(Worker worker) throws InterruptedException {
         // An item is scanned
-        Item item = (Item) scanReady.get((int) worker.getId()).take();
+        Item item = scanReady.get((int) worker.getId()).take();
         inScan.get((int) worker.getId()).put(item);
 
         // The scan finishes
