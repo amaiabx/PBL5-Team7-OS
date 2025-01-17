@@ -33,9 +33,9 @@ public class Item extends Thread {
     public void run() {
         try {
             Thread.sleep(rand.nextInt(500, 2500));
-            System.out.println("\t" + this.getName() + " is ready to be scanned");
-            wastePlant.readyToScan(this);
-            System.out.println("\t\t" + this.getName() + " is being scanned");
+            System.out.println("\t" + this.getName() + " is ready to be sorted");
+            wastePlant.readyToSort(this);
+            System.out.println("\t\t" + this.getName() + " is being sorted");
 
             switch (rand.nextInt(4)) {
                 case 0:
@@ -52,9 +52,9 @@ public class Item extends Thread {
                     break;
             }
 
-            wastePlant.finishScan(this);
-            System.out.println("\t\t" + this.getName() + " has been identified as: " + this.getCategory());
-            System.out.println("\t\t\t" + this.getName() + " has left the scanning station");
+            wastePlant.finishSorting(this);
+            System.out.println("\t\t" + this.getName() + " has been sorted as: " + this.getCategory());
+            System.out.println("\t\t\t" + this.getName() + " has left the sorting line");
         } catch (InterruptedException e) {
             this.interrupt();
         }

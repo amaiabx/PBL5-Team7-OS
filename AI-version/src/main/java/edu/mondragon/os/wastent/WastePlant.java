@@ -1,5 +1,6 @@
 package edu.mondragon.os.wastent;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -12,38 +13,114 @@ public class WastePlant {
     int nMachines;
 
     private Semaphore mutex;
-
     private Semaphore isOn;
     private Semaphore machineAvailable;
     private Semaphore waitToTurnOff;
 
-    private BlockingQueue<Item>[] scanReady;
-    private BlockingQueue<Item>[] inScan;
-    private BlockingQueue<Item>[] scanDone;
-    private BlockingQueue<Item>[] hasLeft;
+    private List<BlockingQueue<Item>> scanReady;
+    private List<BlockingQueue<Item>> inScan;
+    private List<BlockingQueue<Item>> scanDone;
+    private List<BlockingQueue<Item>> hasLeft;
 
     public WastePlant(List<Machine> machines, int nMachines) {
         this.machines = machines;
         this.nMachines = nMachines;
 
         mutex = new Semaphore(1);
-
         isOn = new Semaphore(0);
         machineAvailable = new Semaphore(0);
         waitToTurnOff = new Semaphore(nMachines);
 
-        scanReady = new BlockingQueue[nMachines];
-        inScan = new BlockingQueue[nMachines];
-        scanDone = new BlockingQueue[nMachines];
-        hasLeft = new BlockingQueue[nMachines];
+        scanReady = new ArrayList<>();
+        inScan = new ArrayList<>();
+        scanDone = new ArrayList<>();
+        hasLeft = new ArrayList<>();
 
-        for (int i=0; i < nMachines; i++) {
-            scanReady[i] = new LinkedBlockingQueue<>();
-            inScan[i] = new LinkedBlockingQueue<>(1);
-            scanDone[i] = new LinkedBlockingQueue<>();
-            hasLeft[i] = new LinkedBlockingQueue<>();
+        for (int i = 0; i < nMachines; i++) {
+            scanReady.add(new LinkedBlockingQueue<>());
+            inScan.add(new LinkedBlockingQueue<>(1));
+            scanDone.add(new LinkedBlockingQueue<>());
+            hasLeft.add(new LinkedBlockingQueue<>());
         }
     }
+
+
+    
+    // CONTAINER FUNCTIONS
+
+
+
+    public void arriveContainer(Container container) throws InterruptedException {
+        Machine found;
+
+        // Print the items contained in the container
+        List<Item> items = container.getItemList();
+
+        System.out.println(container.getName() + " has arrived containing items [" +
+        container.getItemList().stream()
+            .map(item -> item.getName().split("Item ")[1]) // Print only the number
+            .collect(Collectors.joining(", "))
+        + "]");
+        
+        // Find a machine to dump the container in
+        found = findAvailableMachine();
+        found.setCanBeOff(false);
+        
+        mutex.acquire(); 
+        // If the line is empty, as it gets items it can't be turned off anymore
+        if (found.getItemList().isEmpty()) {
+            waitToTurnOff.acquire();
+        }
+
+        container.setMachine(found);
+        
+        // Add the items to the machine
+        for (Item item : items) {
+            found.addItem(item);
+        }
+        mutex.release();
+
+        // Start the container's item's threads
+        for (Item item : items) {
+            item.start();
+        }
+    }
+
+
+
+    // MONITOR FUNCTIONS
+
+
+
+    public void turnMachineOn() {
+        // A monitor turns a machine on
+        isOn.release();
+    }
+
+    public void waitToTurnMachineOff() throws InterruptedException {
+        Machine currentMachine = null;
+
+        // Wait until there is a machine that can be turned off
+        waitToTurnOff.acquire();
+        
+        mutex.acquire();
+        for (Machine machine : machines) {
+            // Select a machine that can be turned off (is turned on and its queue is empty)
+            if (machine.isCanBeOff() && machine.isOn()) {
+                currentMachine = machine;
+                break;
+            }
+        }
+        // Turn off the machine
+        beTurnedOff(currentMachine);
+        mutex.release();
+    }
+
+
+
+    // MACHINE FUNCTIONS
+
+
 
     public Machine findAvailableMachine() throws InterruptedException {
         Machine found = null;
@@ -69,62 +146,6 @@ public class WastePlant {
         return found;
     }
 
-    public void arriveContainer(Container container) throws InterruptedException {
-        Machine found;
-
-        // Print the items contained in the container
-        List<Item> items = container.getItemList();
-
-        System.out.println(container.getName() + " has arrived containing items [" +
-        container.getItemList().stream()
-            .map(item -> item.getName().split("Item ")[1]) // Print only the number
-            .collect(Collectors.joining(", "))
-        + "]");
-        
-        // Find a machine to dump the container in
-        found = findAvailableMachine();
-        found.setCanBeOff(false);
-        
-        mutex.acquire(); 
-        // If the container is empty, as it gets items it can't be turned off anymore
-        if (found.getItemList().isEmpty()) {
-            waitToTurnOff.acquire();
-        }
-
-        container.setMachine(found);
-        
-        // Add the items to the machine
-        for (Item item : items) {
-            found.addItem(item);
-        }
-        mutex.release();
-
-        // Start the container's item's threads
-        for (Item item : items) {
-            item.start();
-        }
-    }
-
-    public void readyToScan(Item item) throws InterruptedException {
-        int id = -1;
-
-        mutex.acquire();
-        // Get the ID of the item's assigned machine
-        for (Machine m : machines) {
-            if (m.getItemList().contains(item)) {
-                id = (int) m.getId();
-                break;
-            }
-        }
-        mutex.release();
-        
-        // The item is ready to be scanned
-        scanReady[id].put(item);
-
-        // The item enters the scan
-        inScan[id].take();
-    }
-
     public void beTurnedOn(Machine machine) throws InterruptedException {
         // A machine is turned on
         isOn.acquire();
@@ -139,18 +160,13 @@ public class WastePlant {
         System.out.println(machine.getName() + " was turned off");
     }
 
-    public void turnMachineOn() {
-        // A monitor turns a machine on
-        isOn.release();
-    }
-
     public void scanItem(Machine machine) throws InterruptedException {
         // An item enters the scan
-        Item item = (Item) scanReady[(int) machine.getId()].take();
-        inScan[(int) machine.getId()].put(item);
+        Item item = (Item) scanReady.get((int) machine.getId()).take();
+        inScan.get((int) machine.getId()).put(item);
 
         // The scan finishes
-        scanDone[(int) machine.getId()].put(item);
+        scanDone.get((int) machine.getId()).put(item);
     }
 
     public void removeItem(Item item, Machine m) {
@@ -169,8 +185,7 @@ public class WastePlant {
         mutex.release();
 
         // The scanned item leaves the scanning station
-        // System.out.println(hasLeft[(int) m.getId()]);
-        hasLeft[(int) m.getId()].take();
+        hasLeft.get((int) m.getId()).take();
 
         // Print the item's assigned machine's remaining scan queue
         mutex.acquire();
@@ -188,25 +203,31 @@ public class WastePlant {
         }
         mutex.release();
     }
-    
 
-    public void waitToTurnMachineOff() throws InterruptedException {
-        Machine currentMachine = null;
 
-        // Wait until there is a machine that can be turned off
-        waitToTurnOff.acquire();
-        
+
+    // ITEM FUNCTIONS
+
+
+
+    public void readyToScan(Item item) throws InterruptedException {
+        int id = -1;
+
         mutex.acquire();
-        for (Machine machine : machines) {
-            // Select a machine that can be turned off (is turned on and its queue is empty)
-            if (machine.isCanBeOff() && machine.isOn()) {
-                currentMachine = machine;
+        // Get the ID of the item's assigned machine
+        for (Machine m : machines) {
+            if (m.getItemList().contains(item)) {
+                id = (int) m.getId();
                 break;
             }
         }
-        // Turn off the machine
-        beTurnedOff(currentMachine);
         mutex.release();
+        
+        // The item is ready to be scanned
+        scanReady.get(id).put(item);
+
+        // The item enters the scan
+        inScan.get(id).take();
     }
 
     public void finishScan(Item item) throws InterruptedException {
@@ -224,7 +245,7 @@ public class WastePlant {
         // The item finishes scanning and leaves the station
         mutex.release();
 
-        scanDone[id].take();
-        hasLeft[id].put(item);
+        scanDone.get(id).take();
+        hasLeft.get(id).put(item);
     }    
 }

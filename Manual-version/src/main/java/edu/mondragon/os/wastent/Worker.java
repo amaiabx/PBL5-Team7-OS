@@ -74,9 +74,9 @@ public class Worker extends Thread {
                     wastePlant.beTurnedOn(this);
                     System.out.println(this.getName() + "'s line was turned on");
                 }
-                wastePlant.scanItem(this);
+                wastePlant.sortItem(this);
                 Thread.sleep(rand.nextInt(2000, 2500));
-                wastePlant.itemScanned(this);
+                wastePlant.itemSorted(this);
             } catch (InterruptedException e) {
                 this.interrupt();
             }
