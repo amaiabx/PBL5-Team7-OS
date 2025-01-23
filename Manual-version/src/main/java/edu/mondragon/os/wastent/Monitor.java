@@ -20,7 +20,7 @@ public class Monitor extends Thread {
             System.out.println(this.getName() + " is turning a line on");
             Thread.sleep(rand.nextInt(1000, 2000));
             wastePlant.turnLineOn();
-            Thread.sleep(rand.nextInt(7000, 13000));
+            Thread.sleep(rand.nextInt(5000, 13000));
             System.out.println(this.getName() + " is waiting to turn a line off");
             wastePlant.waitToTurnLineOff();
         } catch (InterruptedException e) {
